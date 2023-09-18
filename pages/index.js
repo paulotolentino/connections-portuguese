@@ -1,89 +1,7 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import { useEffect, useState } from "react";
-
-const wordsMock = [
-  {
-    term: "Cavalo",
-    category: "Farm Animals",
-    color: "red",
-  },
-  {
-    term: "Panela",
-    category: "Kitchen Tools",
-    color: "blue",
-  },
-  {
-    term: "Rosa",
-    category: "Colors",
-    color: "yellow",
-  },
-  {
-    term: "Azul",
-    category: "Colors",
-    color: "yellow",
-  },
-  {
-    term: "Prato",
-    category: "Kitchen Tools",
-    color: "blue",
-  },
-  {
-    term: "Morango",
-    category: "Fruits",
-    color: "green",
-  },
-  {
-    term: "Melancia",
-    category: "Fruits",
-    color: "green",
-  },
-  {
-    term: "Copo",
-    category: "Kitchen Tools",
-    color: "blue",
-  },
-  {
-    term: "Abacate",
-    category: "Fruits",
-    color: "green",
-  },
-  {
-    term: "Vinho",
-    category: "Colors",
-    color: "yellow",
-  },
-  {
-    term: "Ovelha",
-    category: "Farm Animals",
-    color: "red",
-  },
-  {
-    term: "Vaca",
-    category: "Farm Animals",
-    color: "red",
-  },
-  {
-    term: "Limão",
-    category: "Fruits",
-    color: "green",
-  },
-  {
-    term: "Porco",
-    category: "Farm Animals",
-    color: "red",
-  },
-  {
-    term: "Laranja",
-    category: "Colors",
-    color: "yellow",
-  },
-  {
-    term: "Faca",
-    category: "Kitchen Tools",
-    color: "blue",
-  },
-];
+import { connectionsNMock, livesMock, wordsMock } from "../mock";
 
 export default function Home() {
   const [lives, setLives] = useState(0);
@@ -96,12 +14,32 @@ export default function Home() {
 
   useEffect(() => {
     fetchData();
+    setTimeout(() => {
+      const settings = JSON.parse(localStorage.getItem("settings") || "{}");
+      if (settings && settings.day === obterDataFormatada()) {
+        const { words, corrects, results, lives } = settings;
+        setWords(words);
+        setCorrects(corrects);
+        setResults(results);
+        setLives(lives);
+      }
+    }, 1000);
   }, []);
+
+  function obterDataFormatada() {
+    const dataAtual = new Date();
+
+    const dia = String(dataAtual.getDate()).padStart(2, "0");
+    const mes = String(dataAtual.getMonth() + 1).padStart(2, "0");
+    const ano = dataAtual.getFullYear();
+
+    return `${dia}-${mes}-${ano}`;
+  }
 
   function fetchData() {
     setWords(wordsMock);
-    setLives(4);
-    setConnectionsN(1);
+    setLives(livesMock);
+    setConnectionsN(connectionsNMock);
   }
 
   const isSelected = (word) => {
@@ -123,21 +61,33 @@ export default function Home() {
     if (selecteds.length < 4) return;
     const firstCategory = selecteds[0].category;
     const allTheSame = selecteds.every((s) => s.category === firstCategory);
+    let newCorrects = corrects;
+    let newWords = words;
+    let newLives = lives;
     if (allTheSame) {
-      setCorrects([...corrects, firstCategory]);
-      const newWords = words.filter(
-        (w) => !selecteds.find((s) => s.term === w.term)
-      );
+      newCorrects = [...corrects, firstCategory];
+      setCorrects(newCorrects);
+      newWords = words.filter((w) => !selecteds.find((s) => s.term === w.term));
       setWords(newWords);
       setSelecteds([]);
     } else {
-      setLives(lives - 1);
+      newLives = lives - 1;
+      setLives(newLives);
       setShake(true);
       setTimeout(() => {
         setShake(false);
       }, 1000);
     }
-    setResults([...results, selecteds]);
+    const newResults = [...results, selecteds];
+    setResults(newResults);
+    const settings = {
+      words: newWords,
+      corrects: newCorrects,
+      results: newResults,
+      lives: newLives,
+      day: obterDataFormatada(),
+    };
+    localStorage.setItem("settings", JSON.stringify(settings));
   };
 
   const share = () => {
@@ -169,12 +119,6 @@ export default function Home() {
       <main>
         <h1 className={styles.title}>Welcome to Connections in Portuguese!</h1>
 
-        {lives === 0 || words.length === 0 ? (
-          <p className={styles.description}>
-            Don't be affraid, let's try it out!
-          </p>
-        ) : null}
-
         <div>Corrects: {corrects.join(" - ")}</div>
 
         <div className={styles.grid}>
@@ -196,15 +140,11 @@ export default function Home() {
             <div id="results" className={styles.results}>
               {words.length === 0 ? (
                 <span className={styles.resultsHeader}>
-                  Hey congrats!!! You made it!.
-                  <br />
-                  Connection #{connectionsN}
+                  Portuguese Connection #{connectionsN}
                 </span>
               ) : (
                 <span className={styles.resultsHeader}>
-                  Hey sorry, try it again.
-                  <br />
-                  Connection #{connectionsN}
+                  Portuguese Connection #{connectionsN}
                 </span>
               )}
               {results.map((t, i) => (
