@@ -2,6 +2,8 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import { useEffect, useState } from "react";
 import { connectionsNMock, livesMock, wordsMock } from "../mock";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 export default function Home() {
   const [lives, setLives] = useState(0);
@@ -11,6 +13,7 @@ export default function Home() {
   const [results, setResults] = useState([]);
   const [connectionsN, setConnectionsN] = useState([]);
   const [shake, setShake] = useState(false);
+  const notify = () => toast("Copied results to clipboard!");
 
   useEffect(() => {
     fetchData();
@@ -65,7 +68,7 @@ export default function Home() {
     let newWords = words;
     let newLives = lives;
     if (allTheSame) {
-      newCorrects = [...corrects, firstCategory];
+      newCorrects = [...corrects, selecteds];
       setCorrects(newCorrects);
       newWords = words.filter((w) => !selecteds.find((s) => s.term === w.term));
       setWords(newWords);
@@ -93,6 +96,7 @@ export default function Home() {
   const share = () => {
     const copyText = document.getElementById("results").outerText;
     navigator.clipboard.writeText(copyText.replaceAll("\n\n", "\n"));
+    notify();
   };
 
   const getColor = (color) => {
@@ -109,8 +113,24 @@ export default function Home() {
     }
   };
 
+  const clear = () => {
+    setSelecteds([]);
+  };
+
   return (
     <div className={styles.container}>
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover={false}
+        theme="light"
+      />
       <Head>
         <title>Connections in Portuguese</title>
         <link rel="icon" href="/favicon.ico" />
@@ -119,7 +139,23 @@ export default function Home() {
       <main>
         <h1 className={styles.title}>Welcome to Connections in Portuguese!</h1>
 
-        <div>Corrects: {corrects.join(" - ")}</div>
+        <div className={styles.correctSection}>
+          {corrects.map((c) => (
+            <div
+              key={c[0].category}
+              className={`${styles.correctItem} ${styles[c[0].color]}`}
+            >
+              <span className={styles.correctTitle}>{c[0].category}</span>
+              <div className={styles.correctTermsList}>
+                {c.map((w) => (
+                  <span key={w.term} className={styles.correctTerm}>
+                    {w.term}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className={styles.grid}>
           {words.map((word) => (
@@ -161,9 +197,20 @@ export default function Home() {
           <div>
             <span>Lives {Array.from(Array(lives)).map(() => "❤️")}</span>
             <div className={styles.buttonGroup}>
-              <div onClick={submit} className={styles.button}>
+              <button
+                onClick={submit}
+                disabled={selecteds.length < 4}
+                className={styles.button}
+              >
                 Submit
-              </div>
+              </button>
+              <button
+                onClick={clear}
+                disabled={selecteds.length === 0}
+                className={styles.button}
+              >
+                Clear
+              </button>
             </div>
           </div>
         )}

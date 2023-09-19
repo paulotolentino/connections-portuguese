@@ -112,15 +112,20 @@
 .button {
   cursor: pointer;
   text-align: center;
-  text-justify: distribute;
-  height: 2rem;
-  width: 4rem;
+  height: 3rem;
+  width: 5rem;
   border-radius: 25%;
-  background-color: black;
-  color: white;
+  background-color: #000000;
+  color: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.button:disabled,
+.button[disabled] {
+  background-color: white;
+  color: black;
 }
 
 .square {
@@ -151,4 +156,54 @@
 
 .resultsHeader {
   text-align: center;
+}
+
+.correctSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.correctItem {
+  display: flex;
+  border: 2px solid #831212;
+  border-radius: 10px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 600px;
+}
+
+.green {
+  background-color: #0080005e;
+  border: 2px solid #008000;
+}
+
+.yellow {
+  background-color: #ffff005e;
+  border: 2px solid #818100;
+}
+
+.blue {
+  background-color: #0000ff5e;
+  border: 2px solid #0000ff;
+}
+
+.red {
+  background-color: #ff00005e;
+  border: 2px solid #ff0000;
+}
+
+.correctTitle {
+  font-size: 2rem;
+}
+
+.correctTerm {
+  font-size: 1rem;
+}
+
+.correctTermsList {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
 }
